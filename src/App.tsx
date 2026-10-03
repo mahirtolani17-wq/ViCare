@@ -27,6 +27,93 @@ export default function App() {
     }
   }, []);
 
+  // Calculate visual height parameters dynamically for stable portrait viewports
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const updateHeight = () => {
+        const heightVal = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        const currentStyleVal = parseFloat(document.documentElement.style.getPropertyValue("--app-h")) || 0;
+        
+        // Ignore tiny changes under 120px to prevent layout jumping when Safari's toolbar collapses
+        if (Math.abs(heightVal - currentStyleVal) > 120 || currentStyleVal === 0) {
+          document.documentElement.style.setProperty("--app-h", `${heightVal}px`);
+        }
+      };
+
+      updateHeight();
+
+      let resizeTimer: NodeJS.Timeout;
+      const debouncedResize = () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(updateHeight, 250);
+      };
+
+      window.addEventListener("resize", debouncedResize);
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", debouncedResize);
+      }
+      window.addEventListener("orientationchange", updateHeight);
+
+      return () => {
+        window.removeEventListener("resize", debouncedResize);
+        if (window.visualViewport) {
+          window.visualViewport.removeEventListener("resize", debouncedResize);
+        }
+        window.removeEventListener("orientationchange", updateHeight);
+        clearTimeout(resizeTimer);
+      };
+    }
+  }, []);
+
+  // Dynamically synchronize theme-color meta and body background-color on scroll
+  useEffect(() => {
+    if (typeof window === "undefined" || loading) return;
+
+    // Create or find theme-color meta tag in head
+    let metaTag = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
+    if (!metaTag) {
+      metaTag = document.createElement("meta");
+      metaTag.name = "theme-color";
+      document.head.appendChild(metaTag);
+    }
+    metaTag.content = "#2A1D17";
+
+    // Set fallback container background so scroll regions are always matching
+    document.documentElement.style.backgroundColor = "#2A1D17";
+    document.body.style.backgroundColor = "#2A1D17";
+
+    const sections = document.querySelectorAll("section, header, main > div, main > section, #hero, #clinic, #signature, #services, #patient-love, #contact");
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const element = entry.target as HTMLElement;
+            const id = element.id || "";
+            
+            // Map section IDs to exact high-fidelity theme hex colors
+            if (id === "clinic" || id === "signature" || id === "signature-section") {
+              metaTag.content = "#F6EFE6";
+              document.body.style.backgroundColor = "#F6EFE6";
+            } else if (id === "hero" || id === "doctor" || id === "services" || id === "patient-love" || id === "contact") {
+              metaTag.content = "#2A1D17";
+              document.body.style.backgroundColor = "#2A1D17";
+            }
+          }
+        });
+      },
+      {
+        rootMargin: "-10% 0px -75% 0px" // Intersect near the top edge
+      }
+    );
+
+    sections.forEach((sec) => observer.observe(sec));
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [loading]);
+
   // Mouse move listener for custom copper cursor on desktop only
   useEffect(() => {
     if (!supportsHover) return;
@@ -75,7 +162,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      {/* 4% OPTICAL FILM-GRAIN NOISE OVERLAY - Disable full repaints on mobile to optimize GPU */}
+      {/* 4% OPTICAL FILM-GRAIN NOISE OVERLAY - Disabled on mobile to reduce rendering cost */}
       <div 
         className="fixed inset-0 z-50 pointer-events-none mix-blend-overlay opacity-[0.025] hidden md:block"
         style={{
@@ -83,7 +170,7 @@ export default function App() {
         }}
       />
 
-      {/* CUSTOM DESKTOP COPPER CURSOR - Disabled entirely on mobile */}
+      {/* CUSTOM DESKTOP COPPER CURSOR - Disabled entirely on touch inputs */}
       {supportsHover && (
         <div
           className="hidden md:block fixed pointer-events-none z-50 -translate-x-1/2 -translate-y-1/2 transition-all duration-75 ease-out"

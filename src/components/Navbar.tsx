@@ -174,7 +174,13 @@ export default function Navbar() {
             : "bg-transparent text-[#F6EFE6]"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-3.5 md:py-4 flex items-center justify-between">
+        <div 
+          className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between"
+          style={{ 
+            paddingTop: "calc(env(safe-area-inset-top, 0px) + 14px)",
+            paddingBottom: "14px"
+          }}
+        >
           
           {/* ZONE 1 (LEFT): Copper V+ Mark, Wordmark in Gatchina, Tagline in Jost (900px+) */}
           <div className="flex items-center gap-3.5">

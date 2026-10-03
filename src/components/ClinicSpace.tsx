@@ -28,15 +28,16 @@ export default function ClinicSpace() {
             A quiet space designed for clean medical standards, privacy, and genuine, relaxed comfort.
           </p>
 
-          {/* Margin Note */}
+          {/* Margin Note & Arrow */}
           <div className="mt-5 flex items-center justify-center gap-3">
             <MarginNote text="easy ground-floor parking" rotate={2} />
+            <CurlyArrow direction="down-left" label="take a virtual tour" />
           </div>
         </div>
 
         {/* 3D Swiper Coverflow Carousel Component */}
         <div className="w-full flex justify-center items-center">
-          <div className="w-full max-w-4xl">
+          <div className="w-full max-w-5xl">
             <Skiper49 />
           </div>
         </div>

@@ -9,36 +9,30 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css/effect-coverflow";
 import "swiper/css/pagination";
 import "swiper/css";
-import "swiper/css/effect-cards";
-
-// Helper function to concatenate classnames
-function cnLocal(...inputs: any[]) {
-  return inputs.filter(Boolean).join(" ");
-}
 
 const Skiper49 = () => {
   const images = [
     {
-      src: "https://i.ibb.co/DHzmqpSN/Screenshot-2026-10-03-at-2-36-34-PM.png",
-      alt: "ViCare Flagship Spa & Treatment Lounge",
+      src: "https://i.ibb.co/B5cv1NSm/clinic-1.jpg",
+      alt: "ViCare Flagship Entry & Reception Lounge",
     },
     {
-      src: "https://i.ibb.co/k23xyLRp/Screenshot-2026-10-03-at-2-36-49-PM.png",
-      alt: "Pristine US FDA Laser Suite",
+      src: "https://i.ibb.co/chb1vWGP/clinic-2.jpg",
+      alt: "Pristine Clinical Consultation Office",
     },
     {
-      src: "https://i.ibb.co/8nJ7H9GT/Screenshot-2026-10-03-at-2-37-13-PM.png",
-      alt: "Dr. Juhi Consultation Suite",
+      src: "https://i.ibb.co/WNQ2Lf7q/clinic-3.jpg",
+      alt: "State-of-the-Art Dermal Laser Suite",
     },
     {
-      src: "https://i.ibb.co/k2kJqGXx/Screenshot-2026-10-03-at-2-37-30-PM.png",
-      alt: "Elegant Waiting Reception & Welcome Bar",
+      src: "https://i.ibb.co/zVjFPmZr/clinic-4.jpg",
+      alt: "Modern Therapy & Recovery Room",
     }
   ];
 
   return (
-    <div className="flex h-full w-full items-center justify-center overflow-hidden">
-      <Carousel_003 className="" images={images} showPagination loop />
+    <div className="flex h-full w-full items-center justify-center overflow-hidden bg-transparent py-2">
+      <Carousel_003 images={images} showPagination loop />
     </div>
   );
 };
@@ -47,14 +41,12 @@ export { Skiper49 };
 
 const Carousel_003 = ({
   images,
-  className,
-  showPagination = false,
+  showPagination = true,
   loop = true,
   autoplay = true,
-  spaceBetween = 12,
+  spaceBetween = 20,
 }: {
   images: { src: string; alt: string }[];
-  className?: string;
   showPagination?: boolean;
   loop?: boolean;
   autoplay?: boolean;
@@ -63,23 +55,44 @@ const Carousel_003 = ({
   const css = `
   .Carousal_003 {
     width: 100%;
-    height: 380px;
-    padding-bottom: 50px !important;
+    height: 480px;
+    padding-bottom: 60px !important;
   }
   
   .Carousal_003 .swiper-slide {
     background-position: center;
     background-size: cover;
-    width: 310px;
+    width: 340px;
     height: 100%;
-    border-radius: 20px;
+    border-radius: 24px;
     overflow: hidden;
-    border: 4px solid #F6EFE6;
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.35);
+    border: 5px solid #ffffff;
+    box-shadow: 0 15px 35px -10px rgba(42,29,23,0.2);
+    transition: all 0.4s ease;
+  }
+
+  @media (max-width: 640px) {
+    .Carousal_003 {
+      height: 380px;
+    }
+    .Carousal_003 .swiper-slide {
+      width: 260px;
+    }
   }
 
   .swiper-pagination-bullet {
     background-color: #C08B6B !important;
+    opacity: 0.3 !important;
+    width: 8px !important;
+    height: 8px !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .swiper-pagination-bullet-active {
+    background-color: #C08B6B !important;
+    opacity: 1 !important;
+    width: 24px !important;
+    border-radius: 4px !important;
   }
 `;
 
@@ -92,7 +105,7 @@ const Carousel_003 = ({
         duration: 0.6,
         delay: 0.2,
       }}
-      className={cnLocal("relative w-full max-w-4xl px-2 md:px-5", className)}
+      className="relative w-full max-w-5xl"
     >
       <style>{css}</style>
 
@@ -108,7 +121,7 @@ const Carousel_003 = ({
           autoplay={
             autoplay
               ? {
-                  delay: 2500,
+                  delay: 3000,
                   disableOnInteraction: false,
                 }
               : false
@@ -119,11 +132,11 @@ const Carousel_003 = ({
           centeredSlides={true}
           loop={loop}
           coverflowEffect={{
-            rotate: 25,
-            stretch: 0,
-            depth: 120,
-            modifier: 1,
-            slideShadows: true,
+            rotate: 15,
+            stretch: -10,
+            depth: 100,
+            modifier: 1.2,
+            slideShadows: false,
           }}
           pagination={
             showPagination
@@ -142,9 +155,16 @@ const Carousel_003 = ({
                 src={image.src}
                 alt={image.alt}
                 loading="lazy"
+                onError={(e) => {
+                  // Fallback to standard URL in case of DNS/caching issues
+                  const target = e.target as HTMLImageElement;
+                  if (target.src.includes(".jpg")) {
+                    target.src = target.src.replace(".jpg", ".png");
+                  }
+                }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                <span className="text-white text-xs font-sans font-medium tracking-wider uppercase">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#2A1D17]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                <span className="text-[#F6EFE6] text-sm font-sans font-medium tracking-wider uppercase">
                   {image.alt}
                 </span>
               </div>

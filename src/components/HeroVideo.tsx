@@ -1,8 +1,8 @@
 import { useRef, useEffect, useState } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
-import { MessageCircle, MapPin, ChevronDown, ShieldCheck, Sparkles, Phone } from "lucide-react";
+import { MessageCircle, MapPin, ChevronDown } from "lucide-react";
 import Sticker from "./Sticker";
-import { HandCircle, CurlyArrow, MarginNote } from "./HandDrawn";
+import { HandCircle, MarginNote } from "./HandDrawn";
 
 export default function HeroVideo() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -13,6 +13,8 @@ export default function HeroVideo() {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [isMobileFallback, setIsMobileFallback] = useState(false);
+  const [appHeight, setAppHeight] = useState("100svh");
+  const [isPortrait, setIsPortrait] = useState(false);
 
   // Set up Scroll listener
   const { scrollYProgress } = useScroll({
@@ -20,12 +22,38 @@ export default function HeroVideo() {
     offset: ["start start", "end end"]
   });
 
-  // Check connection speed or mobile indicators for smooth Tier fallback
+  // Calculate high-fidelity visual height parameters dynamically for mobile viewport stability
   useEffect(() => {
     if (typeof window !== "undefined") {
+      const updateHeight = () => {
+        const heightVal = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        const currentStyleVal = parseFloat(document.documentElement.style.getPropertyValue("--app-h")) || 0;
+        
+        // Ignore tiny changes under 120px to prevent layout jumping when Safari's toolbar collapses
+        if (Math.abs(heightVal - currentStyleVal) > 120 || currentStyleVal === 0) {
+          document.documentElement.style.setProperty("--app-h", `${heightVal}px`);
+          setAppHeight(`${heightVal}px`);
+        }
+        
+        setIsPortrait(window.innerWidth < 768 && window.innerHeight > window.innerWidth);
+      };
+
+      updateHeight();
+
+      let resizeTimer: NodeJS.Timeout;
+      const debouncedResize = () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(updateHeight, 250);
+      };
+
+      window.addEventListener("resize", debouncedResize);
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", debouncedResize);
+      }
+      window.addEventListener("orientationchange", updateHeight);
+
+      // Mobile check
       const isTouch = window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 768;
-      
-      // Tier C fallback check (touch devices, data-saver mode, low-memory, or slow connection)
       const nav = navigator as any;
       const isLowMemory = nav.deviceMemory && nav.deviceMemory <= 2;
       const isSaveData = nav.connection && nav.connection.saveData;
@@ -33,16 +61,25 @@ export default function HeroVideo() {
       if (isTouch || isLowMemory || isSaveData) {
         setIsMobileFallback(true);
       }
+
+      return () => {
+        window.removeEventListener("resize", debouncedResize);
+        if (window.visualViewport) {
+          window.visualViewport.removeEventListener("resize", debouncedResize);
+        }
+        window.removeEventListener("orientationchange", updateHeight);
+        clearTimeout(resizeTimer);
+      };
     }
   }, []);
 
-  // Responsive scroll wordmark transforms
+  // Responsive scroll wordmark transforms (Centered scaled entrance scaling down to navbar)
   const wordmarkScale = useTransform(scrollYProgress, [0, 0.22], [1, 0.35]);
   const wordmarkY = useTransform(scrollYProgress, [0, 0.22], [0, -180]);
   const wordmarkX = useTransform(scrollYProgress, [0, 0.22], [0, -110]);
   const wordmarkOpacity = useTransform(scrollYProgress, [0, 0.18, 0.24], [1, 0.9, 0]);
 
-  // Sync scroll progress to slides/phases
+  // Map scroll progress to phase state updates
   useEffect(() => {
     try {
       const unsubscribe = scrollYProgress.onChange((latest) => {
@@ -58,11 +95,11 @@ export default function HeroVideo() {
       });
       return () => unsubscribe();
     } catch (err) {
-      console.warn("Scroll animation subscription error", err);
+      console.warn("Scroll progress error", err);
     }
   }, [scrollYProgress]);
 
-  // Video controller: Scroll-Synced seek on desktop, continuous slow playback on mobile
+  // Synchronize playback speeds and fallbacks
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -72,7 +109,6 @@ export default function HeroVideo() {
     const lerpFactor = 0.22; 
     let animationFrameId: number;
 
-    // Direct loop playback for smooth Tier C mobile performance
     if (isMobileFallback) {
       try {
         video.currentTime = 0;
@@ -83,18 +119,17 @@ export default function HeroVideo() {
         const playPromise = video.play();
         if (playPromise !== undefined) {
           playPromise.catch((err) => {
-            console.log("Muted autoplay handled cleanly on mobile pointer", err);
+            console.log("Muted autoplay handled cleanly on mobile", err);
           });
         }
         setVideoLoaded(true);
       } catch (err) {
-        console.warn("Mobile video playback exception", err);
+        console.warn("Mobile autoplay exception", err);
         setVideoError(true);
       }
       return;
     }
 
-    // Scroll scrubbing mechanism for desktop (Tier B)
     const syncVideo = () => {
       try {
         const dur = video.duration || 10.0;
@@ -103,12 +138,10 @@ export default function HeroVideo() {
           targetTime = Math.min(Math.max(progress * dur, 0), dur - 0.05);
           currentTime += (targetTime - currentTime) * lerpFactor;
 
-          // Only seek if time delta is larger than roughly a single frame to protect CPU/GPU
           if (Math.abs(video.currentTime - currentTime) > 0.033 && !video.seeking) {
             video.currentTime = currentTime;
           }
 
-          // Maintain Canvas frame context if initialized
           const canvas = canvasRef.current;
           if (canvas) {
             const ctx = canvas.getContext("2d");
@@ -118,7 +151,7 @@ export default function HeroVideo() {
           }
         }
       } catch (err) {
-        console.warn("Scroll-seeking exception", err);
+        console.warn("Desktop scrubbing error", err);
       }
       animationFrameId = requestAnimationFrame(syncVideo);
     };
@@ -141,21 +174,6 @@ export default function HeroVideo() {
     };
   }, [scrollYProgress, isMobileFallback]);
 
-  // Subtle pointer parallax: Desktop only to prevent touch redraw bugs
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  useEffect(() => {
-    if (isMobileFallback) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({
-        x: (e.clientX / window.innerWidth - 0.5) * 12,
-        y: (e.clientY / window.innerHeight - 0.5) * 12
-      });
-    };
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [isMobileFallback]);
-
   const handleConsultationClick = () => {
     const message = "Hi ViCare, I'd like to book a consultation with Dr. Juhi.";
     window.open(`https://wa.me/919058383905?text=${encodeURIComponent(message)}`, "_blank");
@@ -164,52 +182,89 @@ export default function HeroVideo() {
   const mapsUrl = "https://www.google.com/maps/search/?api=1&query=Vicare+Aesthetique+Karnavati+Infinity+Living+Bhat+Ahmedabad";
   const heroLetters = ["V", "I", "C", "A", "R", "E"];
 
+  // Custom single focal variable for lips/mouth on portrait phones
+  const heroFocusStyle = {
+    "--hero-focus": isPortrait ? "50% 60%" : "50% 50%"
+  } as React.CSSProperties;
+
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[180vh] md:h-[320vh] bg-[#2A1D17] overflow-hidden"
+      style={{ ...heroFocusStyle, backgroundColor: "#2A1D17" }}
+      className="relative w-full h-[185vh] md:h-[320vh] bg-[#2A1D17] overflow-hidden"
       id="hero"
     >
-      {/* PINNED BACKGROUND VIDEO STAGE */}
-      <div className="sticky top-0 left-0 w-full h-[100svh] overflow-hidden flex items-center justify-center">
-        
+      {/* PINNED BACKGROUND STAGE */}
+      <div 
+        style={{ height: appHeight }}
+        className="sticky top-0 left-0 w-full overflow-hidden flex items-center justify-center bg-[#2A1D17]"
+      >
         {/* Full-screen video element */}
-        <video
-          ref={videoRef}
-          src="/assets/hero-video.mp4"
-          muted
-          playsInline
-          autoPlay={isMobileFallback}
-          loop={isMobileFallback}
-          preload="auto"
-          poster="/assets/hero-poster.jpg"
-          onError={() => setVideoError(true)}
-          className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-500 ${
-            videoError ? "opacity-0" : videoLoaded ? "opacity-55" : "opacity-0"
-          }`}
-        />
+        <div className="absolute inset-0 w-full h-full overflow-hidden bg-[#2A1D17]">
+          <video
+            ref={videoRef}
+            src="/assets/hero-video.mp4"
+            muted
+            playsInline
+            autoPlay={isMobileFallback}
+            loop={isMobileFallback}
+            preload="auto"
+            poster="/assets/hero-poster.jpg"
+            onError={() => setVideoError(true)}
+            style={{
+              objectFit: "cover",
+              objectPosition: "var(--hero-focus)"
+            }}
+            className={`absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-500 ${
+              videoError ? "opacity-0" : videoLoaded ? "opacity-55" : "opacity-0"
+            }`}
+          />
 
-        {/* Ambient Canvas Fallback */}
+          {/* Show poster image seamlessly with matching cover position */}
+          {!videoLoaded && !videoError && (
+            <img
+              src="/assets/hero-poster.jpg"
+              alt="ViCare Welcome Frame"
+              style={{
+                objectFit: "cover",
+                objectPosition: "var(--hero-focus)"
+              }}
+              className="absolute inset-0 w-full h-full pointer-events-none opacity-45"
+            />
+          )}
+        </div>
+
+        {/* Ambient Canvas Fallback - centered with matching cover positioning */}
         {!videoLoaded && !videoError && !isMobileFallback && (
           <canvas
             ref={canvasRef}
             width="640"
             height="360"
-            className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-30 mix-blend-lighten"
+            style={{
+              objectFit: "cover",
+              objectPosition: "var(--hero-focus)"
+            }}
+            className="absolute inset-0 w-full h-full pointer-events-none opacity-30 mix-blend-lighten"
           />
         )}
 
-        {/* Dynamic browser-safe gradient mask */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#2A1D17]/90 via-[#2A1D17]/35 to-[#2A1D17]/95 pointer-events-none" />
-        <div className="absolute inset-0 bg-radial-vignette pointer-events-none" />
+        {/* LIGHT BOTTOM-TO-TOP GRADIENT SCRIM (55% opacity at bottom fading to 0 at 45% height) */}
+        <div 
+          className="absolute inset-0 pointer-events-none z-10"
+          style={{
+            background: "linear-gradient(to top, rgba(42,29,23,0.72) 0%, rgba(42,29,23,0.45) 25%, rgba(42,29,23,0) 45%)"
+          }}
+        />
 
-        {/* FLOATING STICKERS - Hidden or limited on mobile screens */}
-        <div className="absolute bottom-24 left-6 md:left-14 z-20 hidden md:block pointer-events-auto">
+        {/* FLOATING STICKERS - Limited on mobile viewports */}
+        <div className="absolute bottom-32 left-6 md:left-14 z-20 hidden md:block pointer-events-auto">
           <Sticker type="open-hours" initialRotate={-4} mobileHidden />
         </div>
 
-        {/* CONTENT STAGE */}
-        <div className="relative z-10 w-full max-w-5xl px-4 md:px-12 flex items-center justify-center text-center">
+        {/* CONTENT STAGE - Lower-Third Anchored on portrait phones */}
+        <div 
+          className="absolute md:relative z-20 w-full max-w-5xl px-6 md:px-12 flex items-center justify-center text-center left-0 right-0 bottom-[calc(env(safe-area-inset-bottom,0px)+112px)] md:bottom-auto"
+        >
           <AnimatePresence mode="wait">
             
             {/* PHASE 0: Grand Entrance Wordmark */}
@@ -221,7 +276,6 @@ export default function HeroVideo() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4 }}
-                style={isMobileFallback ? {} : { x: mousePos.x * 0.4, y: mousePos.y * 0.4 }}
               >
                 <div className="flex items-center gap-1.5 mb-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#C08B6B]" />
@@ -241,12 +295,10 @@ export default function HeroVideo() {
                   }}
                   className="relative my-2 flex items-center justify-center origin-center will-change-transform"
                 >
-                  <div className="absolute -inset-10 rounded-full bg-radial from-[#C08B6B]/25 via-transparent to-transparent blur-2xl pointer-events-none" />
-
                   {/* Scaled Wordmark safely fitting smaller viewports */}
                   <h1
                     className="relative z-10 flex items-center justify-center font-display text-[#F6EFE6] leading-none select-none tracking-[0.1em]"
-                    style={{ fontSize: "clamp(2.5rem, 10vw, 8.5rem)" }}
+                    style={{ fontSize: "clamp(2.5rem, 11vw, 8.5rem)" }}
                     aria-label="VICARE"
                   >
                     {heroLetters.map((letter, i) => (
@@ -268,7 +320,7 @@ export default function HeroVideo() {
                   </h1>
                 </motion.div>
 
-                <p className="mt-2 font-editorial text-base sm:text-xl md:text-2xl tracking-normal text-[#E8D9C6] font-normal">
+                <p className="mt-2 font-editorial text-sm sm:text-xl md:text-2xl tracking-normal text-[#E8D9C6] font-normal">
                   Lips, skin, lasers. <span className="italic text-[#C08B6B]">Natural is the whole point.</span>
                 </p>
 
@@ -290,35 +342,40 @@ export default function HeroVideo() {
               </motion.div>
             )}
 
-            {/* PHASE 1: Philosophy */}
+            {/* PHASE 1: Philosophy (Anchored, Non-Overlapping & Dynamic Stack) */}
             {currentPhase === 1 && (
               <motion.div
                 key="phase-1"
                 className="max-w-3xl flex flex-col items-center relative w-full"
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-                style={isMobileFallback ? {} : { x: mousePos.x * 0.5, y: mousePos.y * 0.5 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.35 }}
               >
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#C08B6B]/35 bg-[#2A1D17]/75 backdrop-blur-sm mb-3">
-                  <Sparkles size={11} className="text-[#C08B6B]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#C08B6B]" />
                   <span className="text-[10px] font-sans font-medium tracking-[0.18em] text-[#C08B6B] uppercase">
                     OUR PHILOSOPHY
                   </span>
                 </div>
 
-                <h2 className="font-display text-2xl sm:text-4xl md:text-6xl lg:text-7xl tracking-[0.05em] text-[#F6EFE6] uppercase leading-tight font-normal">
-                  Refine. Enhance. <HandCircle color="#C08B6B">Empower.</HandCircle>
+                {/* Fully stacked word-by-word on mobile to fit 360px beautifully */}
+                <h2 
+                  className="font-display tracking-[0.05em] text-[#F6EFE6] uppercase leading-[1.1] font-normal"
+                  style={{ fontSize: "clamp(2.1rem, 11vw, 5rem)" }}
+                >
+                  <span className="block sm:inline">REFINE.</span>{" "}
+                  <span className="block sm:inline">ENHANCE.</span>{" "}
+                  <span className="block sm:inline-block">
+                    <HandCircle color="#C08B6B">EMPOWER.</HandCircle>
+                  </span>
                 </h2>
 
-                <p className="mt-4 font-editorial text-sm sm:text-base md:text-lg text-[#E8D9C6]/90 leading-relaxed max-w-lg font-normal">
+                <p 
+                  className="mt-4 font-editorial text-[#E8D9C6]/90 leading-relaxed font-normal max-w-[34ch] md:max-w-lg text-sm sm:text-base md:text-lg"
+                >
                   No frozen looks, no overfilled templates. Just elegant medical aesthetics customized for your unique anatomy by Dr. Juhi Ochwani.
                 </p>
-
-                <div className="mt-4 hidden sm:flex items-center justify-center gap-2">
-                  <CurlyArrow direction="down-right" label="physician-led" />
-                </div>
               </motion.div>
             )}
 
@@ -327,21 +384,23 @@ export default function HeroVideo() {
               <motion.div
                 key="phase-2"
                 className="max-w-2xl flex flex-col items-center relative w-full"
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-                style={isMobileFallback ? {} : { x: mousePos.x * 0.5, y: mousePos.y * 0.5 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.35 }}
               >
                 <div className="mb-3 scale-90">
                   <Sticker type="google-rating" initialRotate={-2} />
                 </div>
 
-                <h2 className="font-display text-2xl sm:text-4xl md:text-5xl tracking-[0.05em] text-[#F6EFE6] uppercase leading-tight font-normal">
+                <h2 
+                  className="font-display tracking-[0.05em] text-[#F6EFE6] uppercase leading-tight font-normal"
+                  style={{ fontSize: "clamp(1.8rem, 9vw, 4.2rem)" }}
+                >
                   Real Feedback, Real Trust
                 </h2>
 
-                <p className="mt-4 font-editorial text-xs sm:text-base text-[#E8D9C6]/90 leading-relaxed max-w-md italic font-normal">
+                <p className="mt-4 font-editorial text-xs sm:text-base text-[#E8D9C6]/90 leading-relaxed max-w-[34ch] md:max-w-md italic font-normal">
                   &ldquo;Dr. Juhi listens patiently and only suggests what is necessary. Clean clinic, beautiful serene environment, and completely natural results.&rdquo;
                 </p>
               </motion.div>
@@ -355,26 +414,28 @@ export default function HeroVideo() {
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.04 }}
-                transition={{ duration: 0.4 }}
-                style={isMobileFallback ? {} : { x: mousePos.x * 0.4, y: mousePos.y * 0.4 }}
+                transition={{ duration: 0.35 }}
               >
                 <div className="mb-2 scale-90">
                   <Sticker type="location" initialRotate={2} />
                 </div>
 
-                <h2 className="font-display text-2xl sm:text-4xl md:text-5xl tracking-[0.05em] text-[#F6EFE6] uppercase leading-tight font-normal mb-2">
+                <h2 
+                  className="font-display tracking-[0.05em] text-[#F6EFE6] uppercase leading-tight font-normal mb-1"
+                  style={{ fontSize: "clamp(1.8rem, 9vw, 4.2rem)" }}
+                >
                   Contact The Clinic
                 </h2>
 
-                <p className="font-editorial text-xs sm:text-sm text-[#E8D9C6]/90 leading-relaxed max-w-sm mb-4 font-normal">
+                <p className="font-editorial text-xs sm:text-sm text-[#E8D9C6]/90 leading-relaxed max-w-[34ch] md:max-w-sm mb-4 font-normal">
                   Karnavati Infinity Living, near Indian Oil Petrol Pump, Bhat, Ahmedabad
                 </p>
 
                 {/* Mobile direct taps */}
-                <div className="flex flex-col gap-3 w-full max-w-xs">
+                <div className="flex flex-col gap-3 w-full max-w-[280px]">
                   <button
                     onClick={handleConsultationClick}
-                    className="flex items-center justify-center gap-2 py-3 rounded-full bg-[#C08B6B] text-[#2A1D17] text-[10px] font-sans font-semibold tracking-[0.18em] uppercase hover:bg-[#E8D9C6] active:scale-95 transition-all shadow-md cursor-pointer"
+                    className="flex items-center justify-center gap-2 h-12 rounded-full bg-[#C08B6B] text-[#2A1D17] text-[10px] font-sans font-semibold tracking-[0.18em] uppercase hover:bg-[#E8D9C6] active:scale-95 transition-all shadow-md cursor-pointer"
                   >
                     <MessageCircle size={14} />
                     <span>WhatsApp Inquiry</span>
@@ -384,7 +445,7 @@ export default function HeroVideo() {
                     href={mapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 py-3 rounded-full border border-[#C08B6B] text-[#F6EFE6] text-[10px] font-sans font-medium tracking-[0.18em] uppercase hover:bg-[#C08B6B]/20 active:scale-95 transition-all"
+                    className="flex items-center justify-center gap-2 h-12 rounded-full border border-[#C08B6B] text-[#F6EFE6] text-[10px] font-sans font-medium tracking-[0.18em] uppercase hover:bg-[#C08B6B]/20 active:scale-95 transition-all"
                   >
                     <MapPin size={14} className="text-[#C08B6B]" />
                     <span>Get Directions</span>
