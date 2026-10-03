@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Romano Revival';
+  src: url('/fonts/RomanoRevival.woff2') format('woff2'),
+       local('Romano Revival'),
+       local('RomanoRevival');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Gatchina';
+  src: url('/fonts/Gatchina.woff2') format('woff2'),
+       local('Gatchina');
+  font-display: swap;
+}
+
+:root {
+  --font-display: 'Romano Revival', 'Cormorant Garamond', Georgia, serif;
+  --font-editorial: 'Gatchina', Georgia, serif;
+  --font-hand: 'Caveat', cursive, sans-serif;
+  --font-sans: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --scale-hero: clamp(3.5rem, 12vw, 11rem);
+  --scale-title: clamp(2rem, 5vw, 4rem);
+  --scale-subtitle: clamp(1.2rem, 2.5vw, 2rem);
+  --scale-body: clamp(0.875rem, 1vw, 1.05rem);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+  }
+  
+  body {
+    background-color: #2A1D17;
+    color: #F6EFE6;
+    overflow-x: hidden;
+  }
+  
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-editorial {
+    font-family: var(--font-editorial);
+  }
+
+  .font-hand {
+    font-family: var(--font-hand);
+  }
+
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+}
+
+/* 1. INFINITE SCROLLING REVIEW MARQUEE */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 35s linear infinite;
+}
+
+/* 2. RADIAL DECORATIVE LIGHTING VIGNETTE */
+.bg-radial-vignette {
+  background: radial-gradient(circle, transparent 30%, rgba(31, 21, 17, 0.85) 100%);
+}
+
+.bg-radial-mesh {
+  background: radial-gradient(circle at center, rgba(192, 139, 107, 0.15) 0%, transparent 70%);
+}
+
+/* 3. SIMULATED INTERACTIVE STREET MAP GRID LINES */
+.bg-grid-lines {
+  background-size: 30px 30px;
+  background-image: 
+    linear-gradient(to right, rgba(192, 139, 107, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(192, 139, 107, 0.05) 1px, transparent 1px);
+}
+
+/* 4. UTILITY HIDE SCROLLBAR */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 5. SLENDER SCROLLBAR FOR GALLERY */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(192, 139, 107, 0.05);
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #C08B6B;
+  border-radius: 9999px;
+}
+
+/* 6. WASHI TAPE (SEMI-TRANSPARENT TAPE STRIPS) */
+.washi-tape {
+  background: rgba(246, 239, 230, 0.65);
+  backdrop-filter: blur(1px);
+  box-shadow: 0 1px 3px rgba(42, 29, 23, 0.15);
+  border-left: 2px dashed rgba(192, 139, 107, 0.35);
+  border-right: 2px dashed rgba(192, 139, 107, 0.35);
+}
+
+/* 7. STICKER DIE-CUT OUTLINE & PEEL SHADOW */
+.sticker-base {
+  box-shadow: 
+    0 4px 12px -2px rgba(42, 29, 23, 0.28),
+    0 1px 3px rgba(42, 29, 23, 0.2),
+    0 0 0 4px #F6EFE6;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+}
+
+.sticker-base:hover {
+  box-shadow: 
+    0 14px 28px -4px rgba(42, 29, 23, 0.45),
+    0 4px 8px rgba(42, 29, 23, 0.25),
+    0 0 0 4px #F6EFE6;
+  transform: translateY(-4px) rotate(-1deg) scale(1.04);
+}
+
+/* 8. METALLIC COPPER FOIL SHINE ANIMATION */
+@keyframes foilShine {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.foil-shine {
+  background: linear-gradient(
+    115deg,
+    #C08B6B 0%,
+    #E8D9C6 45%,
+    #FFF8F0 50%,
+    #E8D9C6 55%,
+    #C08B6B 100%
+  );
+  background-size: 200% 100%;
+  animation: foilShine 4s linear infinite;
+}
+
+/* 9. DECKLED PAPER EDGE */
+.deckled-card {
+  filter: drop-shadow(0 6px 16px rgba(42, 29, 23, 0.35));
+}

@@ -1,0 +1,6 @@
+{
+  "name": "ViCare Skin Clinic | Vicare Aesthetique",
+  "description": "An immersive, luxury medical aesthetic experience for Ahmedabad's boutique clinic.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
