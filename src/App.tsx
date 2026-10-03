@@ -5,6 +5,7 @@ import HeroVideo from "./components/HeroVideo";
 import SignatureFour from "./components/SignatureFour";
 import BeforeAfter from "./components/BeforeAfter";
 import MeetDoctor from "./components/MeetDoctor";
+import ClinicSpace from "./components/ClinicSpace";
 import Services from "./components/Services";
 import PatientLove from "./components/PatientLove";
 import Contact from "./components/Contact";
@@ -13,7 +14,7 @@ import Footer from "./components/Footer";
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
+  const [cursorType, setCursorType] = useState<"dot" | "sparkle" | "heart" | "lip">("dot");
 
   // Mouse move listener for custom copper cursor on desktop
   useEffect(() => {
@@ -23,7 +24,7 @@ export default function App() {
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (
+      const isInteractive =
         target.tagName === "BUTTON" ||
         target.tagName === "A" ||
         target.tagName === "INPUT" ||
@@ -31,11 +32,23 @@ export default function App() {
         target.tagName === "TEXTAREA" ||
         target.closest("button") ||
         target.closest("a") ||
-        target.closest(".cursor-pointer")
-      ) {
-        setIsHovered(true);
+        target.closest(".cursor-pointer");
+
+      if (isInteractive) {
+        // Classify hovered element to assign correct playful emoji/sticker cursor
+        const textContent = target.textContent?.toLowerCase() || "";
+        const href = target.getAttribute("href") || "";
+        const classes = target.className || "";
+
+        if (textContent.includes("lip") || classes.includes("lip") || href.includes("lip")) {
+          setCursorType("lip");
+        } else if (textContent.includes("doctor") || textContent.includes("juhi") || classes.includes("doc")) {
+          setCursorType("heart");
+        } else {
+          setCursorType("sparkle");
+        }
       } else {
-        setIsHovered(false);
+        setCursorType("dot");
       }
     };
 
@@ -60,17 +73,22 @@ export default function App() {
 
       {/* CUSTOM DESKTOP COPPER CURSOR */}
       <div
-        className="hidden md:block fixed pointer-events-none z-50 rounded-full bg-[#C08B6B] -translate-x-1/2 -translate-y-1/2 transition-all duration-100 ease-out"
+        className="hidden md:block fixed pointer-events-none z-50 -translate-x-1/2 -translate-y-1/2 transition-all duration-75 ease-out"
         style={{
           left: `${mousePos.x}px`,
-          top: `${mousePos.y}px`,
-          width: isHovered ? "32px" : "8px",
-          height: isHovered ? "32px" : "8px",
-          opacity: 0.8,
-          backgroundColor: isHovered ? "transparent" : "#C08B6B",
-          border: isHovered ? "2px solid #C08B6B" : "none"
+          top: `${mousePos.y}px`
         }}
-      />
+      >
+        {cursorType === "dot" ? (
+          <div className="w-2 h-2 rounded-full bg-[#C08B6B] shadow-[0_1px_4px_rgba(0,0,0,0.3)]" />
+        ) : cursorType === "lip" ? (
+          <span className="text-xl filter drop-shadow-[0_2px_5px_rgba(0,0,0,0.3)] select-none">💋</span>
+        ) : cursorType === "heart" ? (
+          <span className="text-xl filter drop-shadow-[0_2px_5px_rgba(0,0,0,0.3)] select-none">❤️</span>
+        ) : (
+          <span className="text-xl filter drop-shadow-[0_2px_5px_rgba(0,0,0,0.3)] select-none">✨</span>
+        )}
+      </div>
 
       {/* PRELOADER STAGE */}
       {loading && <Preloader onComplete={() => setLoading(false)} />}
@@ -93,6 +111,9 @@ export default function App() {
 
           {/* Section 4: Founder biography and pulls */}
           <MeetDoctor />
+
+          {/* Section 4.5: 3D Carousel of Clinic Spaces */}
+          <ClinicSpace />
 
           {/* Section 5: Filterable services catalog */}
           <Services />

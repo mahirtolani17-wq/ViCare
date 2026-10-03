@@ -190,10 +190,7 @@ export default function HeroVideo() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#2A1D17]/85 via-[#2A1D17]/40 to-[#2A1D17]/90 pointer-events-none" />
         <div className="absolute inset-0 bg-radial-vignette pointer-events-none" />
 
-        {/* FLOATING STICKERS (Sticker 1 & 2 in Hero) */}
-        <div className="absolute top-24 right-8 md:right-16 z-20 hidden sm:block pointer-events-auto">
-          <Sticker type="copper-foil" initialRotate={6} />
-        </div>
+        {/* FLOATING STICKERS (Sticker in Hero) */}
         <div className="absolute bottom-28 left-6 md:left-14 z-20 hidden md:block pointer-events-auto">
           <Sticker type="open-hours" initialRotate={-4} />
         </div>
