@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import Sticker, { StickerType } from "./Sticker";
@@ -23,6 +23,18 @@ export default function SignatureFour() {
   });
 
   const xTranslation = useTransform(scrollYProgress, [0, 1], ["0%", "-55%"]);
+
+  const [activeMobileIdx, setActiveMobileIdx] = useState(0);
+
+  const handleMobileScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const scrollLeft = container.scrollLeft;
+    const width = container.clientWidth;
+    const idx = Math.round(scrollLeft / width);
+    if (idx >= 0 && idx < 4) {
+      setActiveMobileIdx(idx);
+    }
+  };
 
   const signatures: SignatureItem[] = [
     {
@@ -111,11 +123,27 @@ export default function SignatureFour() {
         </div>
 
         {/* Mobile / Tablet: Smooth Horizontal Scroll List with Snap */}
-        <div className="lg:hidden flex overflow-x-auto gap-6 px-6 pb-8 snap-x snap-mandatory scrollbar-thin">
+        <div
+          onScroll={handleMobileScroll}
+          className="lg:hidden flex overflow-x-auto gap-6 px-6 pb-4 snap-x snap-mandatory scrollbar-none"
+          style={{ touchAction: "pan-y" }}
+        >
           {signatures.map((sig, idx) => (
-            <div key={sig.num} className="snap-center shrink-0 w-[85vw] max-w-[360px]">
+            <div key={sig.num} className="snap-center shrink-0 w-[85vw] max-w-[340px]">
               <SignatureCard sig={sig} idx={idx} />
             </div>
+          ))}
+        </div>
+
+        {/* Dot Indicators for Mobile Carousel */}
+        <div className="lg:hidden flex justify-center gap-2 mt-4">
+          {[0, 1, 2, 3].map((idx) => (
+            <div
+              key={idx}
+              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                activeMobileIdx === idx ? "bg-[#C08B6B] w-4" : "bg-[#C08B6B]/30"
+              }`}
+            />
           ))}
         </div>
       </div>
