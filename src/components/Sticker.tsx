@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 
 export type StickerType =
@@ -35,14 +35,7 @@ export default function Sticker({
   zIndex = 20
 }: StickerProps) {
   const shouldReduceMotion = useReducedMotion();
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [isKissed, setIsKissed] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setIsTouchDevice(window.matchMedia("(pointer: coarse)").matches);
-    }
-  }, []);
 
   const handleTap = () => {
     if (type === "lip-fillers" || type === "lip-tinting") {
@@ -285,16 +278,16 @@ export default function Sticker({
 
   return (
     <motion.div
-      drag={!isTouchDevice && !shouldReduceMotion}
+      drag={!shouldReduceMotion}
       dragElastic={0.25}
       dragTransition={{ bounceStiffness: 400, bounceDamping: 25 }}
-      whileHover={isTouchDevice || shouldReduceMotion ? {} : { scale: 1.08, rotate: initialRotate - 2, y: -4 }}
-      whileTap={shouldReduceMotion ? {} : { scale: 0.95 }}
+      whileHover={shouldReduceMotion ? {} : { scale: 1.08, rotate: initialRotate - 2, y: -4 }}
+      whileTap={shouldReduceMotion ? {} : { scale: 0.96 }}
       initial={{ rotate: initialRotate }}
-      style={{ zIndex, touchAction: isTouchDevice ? "pan-y" : "auto" }}
-      className={`inline-block filter drop-shadow-md select-none ${
-        isTouchDevice ? "" : "cursor-grab active:cursor-grabbing"
-      } ${mobileHidden ? "hidden sm:inline-block" : "inline-block"} ${className}`}
+      style={{ zIndex }}
+      className={`inline-block filter drop-shadow-md cursor-grab active:cursor-grabbing ${
+        mobileHidden ? "hidden sm:inline-block" : "inline-block"
+      } ${className}`}
     >
       {renderStickerContent()}
     </motion.div>

@@ -147,7 +147,6 @@ function ComparisonSlider({ caseItem }: { caseItem: GalleryCase }) {
   return (
     <div
       ref={containerRef}
-      style={{ touchAction: "pan-y" }}
       className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden border border-[#C08B6B]/20 bg-[#1F1511] select-none cursor-ew-resize shadow-2xl"
       onMouseDown={(e) => {
         e.preventDefault();
@@ -252,10 +251,10 @@ function ComparisonSlider({ caseItem }: { caseItem: GalleryCase }) {
       >
         <div className="w-[2px] h-full bg-[#F6EFE6] shadow-[0_0_10px_rgba(0,0,0,0.5)] -ml-[1px]" />
         
-        {/* Copper Grip Knob - 44px for touch accessibility */}
-        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-11 h-11 rounded-full bg-[#F6EFE6] border-2 border-[#C08B6B] flex items-center justify-center text-[#2A1D17] shadow-xl pointer-events-auto">
-          <ChevronLeft size={14} className="-mr-1 text-[#2A1D17]" />
-          <ChevronRight size={14} className="text-[#2A1D17]" />
+        {/* Copper Grip Knob */}
+        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-[#F6EFE6] border-2 border-[#C08B6B] flex items-center justify-center text-[#2A1D17] shadow-xl pointer-events-auto">
+          <ChevronLeft size={12} className="-mr-1 text-[#2A1D17]" />
+          <ChevronRight size={12} className="text-[#2A1D17]" />
         </div>
       </div>
     </div>

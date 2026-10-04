@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { motion, useReducedMotion } from "motion/react";
 
 /**
@@ -14,19 +14,9 @@ export function MarkerUnderline({
   className?: string;
 }) {
   const shouldReduceMotion = useReducedMotion();
-  const [fontsReady, setFontsReady] = useState(false);
-
-  useEffect(() => {
-    if (typeof document !== "undefined" && (document as any).fonts) {
-      (document as any).fonts.ready.then(() => setFontsReady(true));
-    } else {
-      setFontsReady(true);
-    }
-  }, []);
 
   return (
     <svg
-      key={fontsReady ? "fonts-loaded" : "fonts-waiting"}
       viewBox="0 0 160 14"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -47,7 +37,7 @@ export function MarkerUnderline({
   );
 }
 
-// Circled word annotation - Perfect percentage-based bounding formula
+// Circled word annotation
 export function HandCircle({
   children,
   color = "#C08B6B",
@@ -58,37 +48,21 @@ export function HandCircle({
   className?: string;
 }) {
   const shouldReduceMotion = useReducedMotion();
-  const [fontsReady, setFontsReady] = useState(false);
-
-  useEffect(() => {
-    if (typeof document !== "undefined" && (document as any).fonts) {
-      (document as any).fonts.ready.then(() => setFontsReady(true));
-    } else {
-      setFontsReady(true);
-    }
-  }, []);
 
   return (
-    <span className={`relative inline-block ${className}`}>
+    <span className={`relative inline-block px-2.5 py-1 ${className}`}>
       <span className="relative z-10">{children}</span>
       <svg
-        key={fontsReady ? "fonts-ready" : "fonts-pending"}
         viewBox="0 0 110 50"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="absolute pointer-events-none overflow-visible"
-        style={{
-          inset: "-14% -10%",
-          width: "120%",
-          height: "128%"
-        }}
-        preserveAspectRatio="none"
+        className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
         aria-hidden="true"
       >
         <motion.path
           d="M 12 25 C 10 12, 50 4, 98 12 C 108 20, 104 38, 70 45 C 30 48, 5 38, 8 20 C 10 10, 35 6, 60 7"
           stroke={color}
-          strokeWidth="2.5"
+          strokeWidth="2"
           strokeLinecap="round"
           initial={shouldReduceMotion ? { pathLength: 1 } : { pathLength: 0 }}
           whileInView={{ pathLength: 1 }}

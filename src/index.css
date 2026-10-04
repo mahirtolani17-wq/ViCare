@@ -30,13 +30,12 @@
   html {
     scroll-behavior: smooth;
     font-family: var(--font-sans);
-    overflow-x: clip;
   }
   
   body {
     background-color: #2A1D17;
     color: #F6EFE6;
-    overflow-x: clip;
+    overflow-x: hidden;
   }
   
   h1, h2, h3, .font-display {

@@ -37,7 +37,7 @@ export default function ClinicSpace() {
 
         {/* 3D Swiper Coverflow Carousel Component */}
         <div className="w-full flex justify-center items-center">
-          <div className="w-full max-w-5xl">
+          <div className="w-full max-w-5xl rounded-3xl p-4 md:p-6 bg-[#2A1D17]/5 border border-[#C08B6B]/15 shadow-inner">
             <Skiper49 />
           </div>
         </div>

@@ -174,13 +174,7 @@ export default function Navbar() {
             : "bg-transparent text-[#F6EFE6]"
         }`}
       >
-        <div 
-          className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between"
-          style={{ 
-            paddingTop: "calc(env(safe-area-inset-top, 0px) + 14px)",
-            paddingBottom: "14px"
-          }}
-        >
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-3.5 md:py-4 flex items-center justify-between">
           
           {/* ZONE 1 (LEFT): Copper V+ Mark, Wordmark in Gatchina, Tagline in Jost (900px+) */}
           <div className="flex items-center gap-3.5">
@@ -448,16 +442,11 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* MOBILE FIXED BOTTOM ACTION BAR (Booking & Calling) - Hidden when directory is open, and notched-safe */}
-      <div 
-        className={`md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#1F1511]/95 backdrop-blur-md border-t border-[#C08B6B]/20 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] flex items-center justify-between gap-3 transition-transform duration-300 ${
-          isOpen ? "translate-y-full pointer-events-none" : "translate-y-0"
-        }`}
-      >
+      {/* MOBILE FIXED BOTTOM ACTION BAR (Booking & Calling) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#1F1511]/95 backdrop-blur-md border-t border-[#C08B6B]/20 px-4 py-2.5 flex items-center justify-between gap-3">
         <a
           href="tel:+919058383905"
-          className="flex-1 flex items-center justify-center gap-2 h-12 rounded-full border border-[#C08B6B]/40 text-[#F6EFE6] text-[11px] font-sans tracking-[0.18em] uppercase active:scale-95 transition-transform"
-          aria-label="Call clinic directly"
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-full border border-[#C08B6B]/40 text-[#F6EFE6] text-[11px] font-sans tracking-[0.18em] uppercase active:scale-95 transition-transform"
         >
           <Phone size={13} className="text-[#C08B6B]" />
           <span>Call Clinic</span>
@@ -465,8 +454,7 @@ export default function Navbar() {
 
         <button
           onClick={handleConsultation}
-          className="flex-1 flex items-center justify-center gap-2 h-12 rounded-full bg-[#C08B6B] text-[#2A1D17] text-[11px] font-sans font-semibold tracking-[0.18em] uppercase active:scale-95 transition-transform shadow-lg cursor-pointer"
-          aria-label="Book a clinical consultation now"
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-full bg-[#C08B6B] text-[#2A1D17] text-[11px] font-sans font-semibold tracking-[0.18em] uppercase active:scale-95 transition-transform shadow-lg cursor-pointer"
         >
           <MessageCircle size={13} />
           <span>Book Now</span>
